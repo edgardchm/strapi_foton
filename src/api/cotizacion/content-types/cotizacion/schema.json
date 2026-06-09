@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cotizaciones",
+  "info": {
+    "singularName": "cotizacion",
+    "pluralName": "cotizaciones",
+    "displayName": "Cotización",
+    "description": "Solicitudes de cotización desde el sitio web"
+  },
+  "options": { "draftAndPublish": false },
+  "attributes": {
+    "nombre": { "type": "string", "required": true, "minLength": 2, "maxLength": 150 },
+    "apellido": { "type": "string", "maxLength": 150 },
+    "email": { "type": "email", "required": true },
+    "telefono": { "type": "string", "required": true, "minLength": 8, "maxLength": 30 },
+    "modeloInteres": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::modelo.modelo"
+    },
+    "region": { "type": "string", "maxLength": 100 },
+    "sucursal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sucursal.sucursal"
+    },
+    "mensaje": { "type": "text", "maxLength": 1000 },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["nuevo", "contactado", "cerrado", "descartado"],
+      "default": "nuevo"
+    },
+    "origen": { "type": "string", "maxLength": 100 },
+    "metadata": { "type": "json", "private": true },
+    "ip": { "type": "string", "private": true, "maxLength": 45 }
+  }
+}

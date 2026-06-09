@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "contactos",
+  "info": {
+    "singularName": "contacto",
+    "pluralName": "contactos",
+    "displayName": "Contacto",
+    "description": "Mensajes de contacto general del sitio web"
+  },
+  "options": { "draftAndPublish": false },
+  "attributes": {
+    "nombre": { "type": "string", "required": true, "minLength": 2, "maxLength": 150 },
+    "email": { "type": "email", "required": true },
+    "telefono": { "type": "string", "maxLength": 30 },
+    "asunto": { "type": "string", "maxLength": 200 },
+    "mensaje": { "type": "text", "required": true, "minLength": 10, "maxLength": 2000 },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["nuevo", "leido", "respondido"],
+      "default": "nuevo"
+    },
+    "metadata": { "type": "json", "private": true },
+    "ip": { "type": "string", "private": true, "maxLength": 45 }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "kind": "collectionType",
+  "collectionName": "modelos",
+  "info": {
+    "singularName": "modelo",
+    "pluralName": "modelos",
+    "displayName": "Modelo",
+    "description": "Vehículos Foton disponibles en Chile"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "nombre": {
+      "pluginOptions": { "i18n": { "localized": true } },
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 150
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nombre",
+      "required": true
+    },
+    "categoria": {
+      "type": "enumeration",
+      "enum": ["livianos", "medianos", "pesados", "electricos"],
+      "required": true
+    },
+    "descripcion": {
+      "pluginOptions": { "i18n": { "localized": true } },
+      "type": "richtext"
+    },
+    "resumen": {
+      "pluginOptions": { "i18n": { "localized": true } },
+      "type": "text",
+      "maxLength": 500
+    },
+    "imagenPrincipal": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "galeria": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "precioDesde": {
+      "type": "decimal",
+      "min": 0
+    },
+    "potencia": { "type": "string", "maxLength": 100 },
+    "torque": { "type": "string", "maxLength": 100 },
+    "carga": { "type": "string", "maxLength": 100 },
+    "motor": { "type": "string", "maxLength": 200 },
+    "transmision": { "type": "string", "maxLength": 100 },
+    "combustible": { "type": "string", "maxLength": 100 },
+    "fichaTecnica": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["files"]
+    },
+    "destacado": { "type": "boolean", "default": false },
+    "orden": { "type": "integer", "min": 0, "default": 0 },
+    "activo": { "type": "boolean", "default": true },
+    "metadata": { "type": "json" },
+    "versiones": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::modelo-version.modelo-version",
+      "mappedBy": "modelo"
+    }
+  }
+}

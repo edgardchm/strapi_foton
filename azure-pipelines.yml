@@ -1,0 +1,146 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  dockerRegistryServiceConnection: 'strapi-registry'
+  imageRepository: 'strapi'
+  containerRegistry: 'strapiregistry.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/docker/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+  # ── Stage 1: Build, Lint, Test ────────────────────────
+  - stage: Build
+    displayName: Build and Test
+    jobs:
+      - job: BuildJob
+        displayName: Lint, Test, Build
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+            displayName: 'Install Node.js 18'
+
+          - script: npm ci --legacy-peer-deps
+            displayName: 'npm ci'
+
+          - script: npm run lint
+            displayName: 'ESLint'
+
+          - script: npm run format:check
+            displayName: 'Prettier check'
+
+          - script: npm run test
+            displayName: 'Jest tests'
+
+          - script: npm run build
+            displayName: 'Strapi build'
+            env:
+              NODE_ENV: production
+              APP_KEYS: $(APP_KEYS)
+              ADMIN_JWT_SECRET: $(ADMIN_JWT_SECRET)
+              JWT_SECRET: $(JWT_SECRET)
+              API_TOKEN_SALT: $(API_TOKEN_SALT)
+              TRANSFER_TOKEN_SALT: $(TRANSFER_TOKEN_SALT)
+
+      - job: BuildDocker
+        displayName: Build Docker Image
+        dependsOn: BuildJob
+        steps:
+          - task: Docker@2
+            displayName: Build and push image to ACR
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(tag)
+                latest
+
+  # ── Stage 2: Deploy Staging ───────────────────────────
+  - stage: DeployStaging
+    displayName: Deploy to Staging
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployStaging
+        displayName: Deploy to Staging Slot
+        environment: 'staging'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  displayName: 'Deploy to Staging Slot'
+                  inputs:
+                    azureSubscription: 'Azure-Connection'
+                    appType: 'webAppContainer'
+                    appName: 'kaufmann-strapi-prod'
+                    deployToSlotOrASE: true
+                    resourceGroupName: 'kaufmann-prod'
+                    slotName: 'staging'
+                    imageName: '$(containerRegistry)/$(imageRepository):$(tag)'
+
+      - job: SmokeTests
+        displayName: Smoke Tests
+        dependsOn: DeployStaging
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.x'
+
+          - script: |
+              pip install requests
+              python -c "
+              import requests, time
+              time.sleep(30)
+              r = requests.get('https://kaufmann-strapi-prod-staging.azurewebsites.net/admin')
+              assert r.status_code == 200, f'Admin panel failed: {r.status_code}'
+              r = requests.get('https://kaufmann-strapi-prod-staging.azurewebsites.net/api/sucursales')
+              assert r.status_code in [200, 401], f'API failed: {r.status_code}'
+              print('Smoke tests passed')
+              "
+            displayName: 'Run smoke tests'
+
+  # ── Stage 3: Manual approval ──────────────────────────
+  - stage: ApprovalProd
+    displayName: Manual Approval for Production
+    dependsOn: DeployStaging
+    condition: succeeded()
+    jobs:
+      - job: waitForValidation
+        displayName: Wait for Approval
+        pool: server
+        timeoutInMinutes: 1440
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 1440
+            inputs:
+              notifyUsers: 'echavez@kaufmann.cl'
+              instructions: 'Review staging at https://kaufmann-strapi-prod-staging.azurewebsites.net/admin and approve for production'
+
+  # ── Stage 4: Blue-Green Production ───────────────────
+  - stage: DeployProduction
+    displayName: Blue-Green Deploy to Production
+    dependsOn: ApprovalProd
+    condition: succeeded()
+    jobs:
+      - deployment: DeployProduction
+        displayName: Swap Staging → Production
+        environment: 'production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureAppServiceManage@0
+                  displayName: 'Swap Staging to Production'
+                  inputs:
+                    azureSubscription: 'Azure-Connection'
+                    Action: 'Swap Slots'
+                    WebAppName: 'kaufmann-strapi-prod'
+                    ResourceGroupName: 'kaufmann-prod'
+                    SourceSlot: 'staging'

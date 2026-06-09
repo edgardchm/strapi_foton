@@ -1,0 +1,79 @@
+version: '3.8'
+
+# ════════════════════════════════════════════════════════
+# Foton CMS — Docker Compose
+# Levanta Strapi + PostgreSQL 15
+# Uso: cd docker && docker-compose up -d
+# ════════════════════════════════════════════════════════
+
+services:
+  # ── PostgreSQL 15 ──────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: foton_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-foton_strapi}
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-Foton@StrongPass1}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USERNAME:-postgres} -d ${DATABASE_NAME:-foton_strapi}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - foton_network
+
+  # ── Strapi CMS ─────────────────────────────────────────
+  strapi:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: foton_strapi
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      HOST: 0.0.0.0
+      PORT: 1337
+      APP_KEYS: ${APP_KEYS:-dev_key1,dev_key2,dev_key3,dev_key4}
+      API_TOKEN_SALT: ${API_TOKEN_SALT:-dev_api_token_salt}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-dev_admin_jwt_secret}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret}
+      TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT:-dev_transfer_salt}
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-foton_strapi}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-Foton@StrongPass1}
+      DATABASE_SCHEMA: public
+      DATABASE_SSL: 'false'
+      DATABASE_POOL_MIN: 2
+      DATABASE_POOL_MAX: 10
+      MAX_IMPORT_FILE_SIZE: 5242880
+      ALLOWED_IMPORT_TYPES: xlsx,xls
+    ports:
+      - '1337:1337'
+    volumes:
+      - strapi_uploads:/app/public/uploads
+    networks:
+      - foton_network
+
+volumes:
+  postgres_data:
+    driver: local
+  strapi_uploads:
+    driver: local
+
+networks:
+  foton_network:
+    driver: bridge

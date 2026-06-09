@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "agendamientos",
+  "info": {
+    "singularName": "agendamiento",
+    "pluralName": "agendamientos",
+    "displayName": "Agendamiento",
+    "description": "Agendamientos de servicio técnico"
+  },
+  "options": { "draftAndPublish": false },
+  "attributes": {
+    "nombre": { "type": "string", "required": true, "minLength": 2, "maxLength": 150 },
+    "email": { "type": "email" },
+    "telefono": { "type": "string", "required": true, "minLength": 8, "maxLength": 30 },
+    "patente": { "type": "string", "maxLength": 20 },
+    "modelo": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::modelo.modelo"
+    },
+    "kilometraje": { "type": "integer", "min": 0 },
+    "servicio": { "type": "string", "maxLength": 200 },
+    "sucursal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sucursal.sucursal"
+    },
+    "fecha": { "type": "date" },
+    "hora": { "type": "string", "maxLength": 10 },
+    "observaciones": { "type": "text", "maxLength": 1000 },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["solicitado", "confirmado", "cancelado", "realizado"],
+      "default": "solicitado"
+    },
+    "metadata": { "type": "json", "private": true },
+    "ip": { "type": "string", "private": true, "maxLength": 45 }
+  }
+}

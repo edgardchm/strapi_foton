@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "modelo_versions",
+  "info": {
+    "singularName": "modelo-version",
+    "pluralName": "modelo-versions",
+    "displayName": "Versión de Modelo",
+    "description": "Variantes y versiones de un modelo Foton"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 150
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nombre",
+      "required": true
+    },
+    "modelo": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::modelo.modelo",
+      "inversedBy": "versiones",
+      "required": true
+    },
+    "precio": { "type": "decimal", "min": 0 },
+    "especificaciones": { "type": "json" },
+    "imagen": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "fichaTecnica": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["files"]
+    },
+    "activo": { "type": "boolean", "default": true },
+    "orden": { "type": "integer", "min": 0, "default": 0 }
+  }
+}

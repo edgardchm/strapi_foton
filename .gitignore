@@ -1,0 +1,28 @@
+# Strapi
+.env
+.env.*
+!.env.example
+.cache
+.tmp
+build/
+dist/
+node_modules/
+public/uploads/*
+!public/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
