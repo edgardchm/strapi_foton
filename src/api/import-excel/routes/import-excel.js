@@ -10,7 +10,7 @@ module.exports = {
         auth: { scope: ['plugin::users-permissions.user'] },
         policies: [],
         description: 'Preview importación Excel — requiere autenticación',
-        middlewares: ['plugin::upload.koa-body'],
+        middlewares: [],
       },
     },
     {
