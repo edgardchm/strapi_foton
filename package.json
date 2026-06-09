@@ -5,7 +5,7 @@
   "description": "Strapi CMS backend for Foton Chile — Kaufmann Platform",
   "scripts": {
     "develop": "strapi develop",
-    "start": "strapi start",
+    "start": "mkdir -p ./public/uploads && strapi start",
     "build": "strapi build",
     "strapi": "strapi",
     "test": "jest --forceExit --detectOpenHandles",
