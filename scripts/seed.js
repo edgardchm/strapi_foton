@@ -474,6 +474,87 @@ const GLOBAL_CONFIG = {
   seoDefaultDescription: 'Distribuidor oficial Foton en Chile. Livianos, medianos, pesados y eléctricos con respaldo de Andes Motor en Santiago, Antofagasta y Concepción.',
 };
 
+// ── DATOS: FAQs ───────────────────────────────────────────────────────────────
+
+const FAQS = [
+  { pregunta: '¿Qué modelos de camiones Foton están disponibles en Chile?', respuesta: 'Foton Chile comercializa actualmente una línea completa de vehículos comerciales a través de su distribuidor oficial Andes Motor: el Aumark S (camión liviano multipropósito), el 1827 Chasis (camión de distribución regional), el 1827 Volquete, el Auman 1522, el Auman GTL para transporte de largo recorrido, y el e 614 Eléctrico, el primer camión eléctrico de la marca disponible en el país. Puedes ver las especificaciones completas de cada modelo en nuestra página de modelos.', categoria: 'vehiculos', orden: 1, activa: true },
+  { pregunta: '¿Cuál es el camión más adecuado para mi tipo de negocio?', respuesta: 'La elección depende del uso principal, la carga habitual y la ruta de operación. El Aumark S es ideal para distribución urbana y reparto; el 1827 para construcción y distribución regional; el Auman 1522 para trabajo pesado 6x4; el Auman GTL para larga distancia; y el e 614 Eléctrico para operaciones urbanas de última milla. Nuestros asesores pueden orientarte según el tonelaje, radio de operación y presupuesto.', categoria: 'vehiculos', orden: 2, activa: true },
+  { pregunta: '¿Los camiones Foton cumplen las normativas de emisiones en Chile?', respuesta: 'Sí. Todos los vehículos Foton comercializados en Chile cumplen con la normativa de emisiones Euro V vigente, exigida por el Ministerio del Medio Ambiente para vehículos de transporte de carga. El modelo e 614 Eléctrico opera con cero emisiones directas, siendo una opción elegible para zonas de restricción vehicular en la Región Metropolitana.', categoria: 'vehiculos', orden: 3, activa: true },
+  { pregunta: '¿Dónde puedo hacer una prueba de manejo?', respuesta: 'Puedes solicitar una prueba de manejo en cualquiera de nuestras sucursales, sujeto a disponibilidad del modelo y coordinación previa. Te recomendamos agendar una visita para garantizar que el camión que deseas conocer esté disponible el día que te convenga.', categoria: 'vehiculos', orden: 4, activa: true },
+  { pregunta: '¿Foton fabrica camiones refrigerados o con carrocería especial?', respuesta: 'Foton produce chasis y vehículos base que pueden ser carrozados por terceros homologados. Trabajamos con carrozadores especializados para soluciones como frío, furgón, plataforma, volcador y más. Si necesitas un equipamiento específico, cuéntanos tu operación y gestionamos una solución a medida.', categoria: 'vehiculos', orden: 5, activa: true },
+  { pregunta: '¿Cómo inicio el proceso de compra de un camión Foton?', respuesta: 'Puedes iniciar el proceso de tres formas: completando el formulario de cotización online, escribiéndonos por WhatsApp, o visitando directamente cualquiera de nuestras sucursales. Un asesor comercial te contactará en un plazo máximo de 24 horas hábiles con una cotización personalizada.', categoria: 'compra', orden: 6, activa: true },
+  { pregunta: '¿Ofrecen financiamiento propio o trabajan con entidades bancarias?', respuesta: 'Trabajamos con múltiples alternativas de financiamiento: leasing operativo, leasing financiero y crédito comercial a través de alianzas con entidades bancarias y empresas de factoring especializadas en flota. También gestionamos subsidios para vehículos eléctricos cuando aplica.', categoria: 'compra', orden: 7, activa: true },
+  { pregunta: '¿Cuál es el plazo de entrega habitual de un camión?', respuesta: 'Para modelos disponibles en stock, el plazo de entrega es de 5 a 10 días hábiles tras la confirmación del pedido y la aprobación del financiamiento (si aplica). Para unidades bajo pedido con configuración especial o carrozado adicional, el plazo varía entre 30 y 90 días.', categoria: 'compra', orden: 8, activa: true },
+  { pregunta: '¿Puedo comprar un camión Foton si tengo empresa en regiones fuera de Santiago?', respuesta: 'Sí. Tenemos presencia nacional con sucursales en la Región Metropolitana y cobertura comercial en regiones a través de nuestra red de atención. El proceso de cotización y trámite se puede gestionar completamente de forma remota, con coordinación de entrega en la ubicación acordada.', categoria: 'compra', orden: 9, activa: true },
+  { pregunta: '¿Aceptan vehículo en parte de pago?', respuesta: 'Evaluamos la recepción de vehículos usados en parte de pago caso a caso, dependiendo del modelo, año, kilometraje y estado general. Te recomendamos mencionarlo desde el inicio de la cotización para que tu asesor gestione la tasación y lo incluya en la propuesta comercial.', categoria: 'compra', orden: 10, activa: true },
+  { pregunta: '¿Cuánto tiempo de garantía tiene un camión Foton nuevo?', respuesta: 'Los camiones Foton nuevos cuentan con garantía oficial de 2 años o 100.000 km (lo que ocurra primero), cubriendo defectos de fabricación en motor, caja de cambios, diferencial y componentes estructurales. La garantía es válida en toda la red de servicio técnico autorizado Andes Motor en Chile.', categoria: 'garantia', orden: 11, activa: true },
+  { pregunta: '¿Qué cubre y qué no cubre la garantía?', respuesta: 'Cubre: defectos de fabricación en tren motriz, sistema eléctrico, frenos, dirección y carrocería de fábrica. No cubre: desgaste normal de consumibles (neumáticos, pastillas, filtros, aceite), daños por accidente, mal uso, cargas sobre el límite permitido, modificaciones no autorizadas, ni falta de mantenimiento preventivo.', categoria: 'garantia', orden: 12, activa: true },
+  { pregunta: '¿La garantía se pierde si realizo el mantenimiento fuera de la red Andes Motor?', respuesta: 'El mantenimiento preventivo fuera de la red autorizada puede poner en riesgo la garantía si se demuestra que el servicio no fue ejecutado correctamente o se utilizaron repuestos no originales. Para proteger tu garantía, te recomendamos siempre realizar los servicios en nuestra red de talleres autorizados con repuestos originales Foton.', categoria: 'garantia', orden: 13, activa: true },
+  { pregunta: '¿Cómo hacer efectiva la garantía si mi camión presenta una falla?', respuesta: 'Contáctanos de inmediato por WhatsApp o llama al (+56 2) 2 720 2221. Nuestro equipo de post venta evaluará la situación, gestionará el ingreso al taller más cercano o coordinará asistencia en ruta si el vehículo no puede desplazarse. Ten a mano el número de chasis y los documentos de compra.', categoria: 'garantia', orden: 14, activa: true },
+  { pregunta: '¿Con qué frecuencia debo realizar el mantenimiento preventivo?', respuesta: 'Como norma general, los camiones Foton requieren su primer servicio a las 5.000 km y luego cada 10.000 km o cada 6 meses, lo que ocurra primero. En operaciones exigentes (minería, caminos de tierra, altas cargas) se recomienda reducir este intervalo. Consulta el manual del propietario de tu modelo específico.', categoria: 'postventa', orden: 15, activa: true },
+  { pregunta: '¿Tienen repuestos originales disponibles en Chile?', respuesta: 'Sí. Mantenemos un stock permanente de repuestos originales Foton en nuestro centro de distribución en Santiago. Para modelos de alta rotación, los repuestos más críticos están disponibles de forma inmediata. Para piezas de menor rotación, el plazo de abastecimiento es de 7 a 21 días hábiles.', categoria: 'postventa', orden: 16, activa: true },
+  { pregunta: '¿Ofrecen servicio técnico a domicilio o asistencia en ruta?', respuesta: 'Contamos con un servicio de asistencia en ruta para vehículos con garantía activa en la Región Metropolitana y zonas de cobertura directa. Para regiones, coordinamos con nuestra red de talleres asociados. Ante una emergencia, llama directamente al (+56 2) 2 720 2221 o escríbenos por WhatsApp.', categoria: 'postventa', orden: 17, activa: true },
+  { pregunta: '¿Puedo agendar un servicio de mantenimiento online?', respuesta: 'Sí. Puedes agendar tu próximo servicio en línea seleccionando el tipo de mantención, la fecha preferida y la sucursal más conveniente para ti. También puedes coordinar directamente por WhatsApp si prefieres atención personalizada.', categoria: 'postventa', orden: 18, activa: true },
+  { pregunta: '¿Cuánto demora normalmente un servicio de mantenimiento?', respuesta: 'Un servicio de mantención estándar (cambio de aceite, filtros y revisión general) toma entre 2 y 4 horas. Intervenciones más complejas pueden requerir 1 a 2 días. Te informamos el tiempo estimado al momento de ingresar el vehículo y te avisamos cuando esté listo.', categoria: 'postventa', orden: 19, activa: true },
+  { pregunta: '¿Cuál es la autonomía real del camión eléctrico e 614?', respuesta: 'El Foton e 614 tiene una autonomía certificada de hasta 208 km en condiciones estándar. En operaciones urbanas reales con ciclos de parada y arranque, la autonomía efectiva se sitúa entre 150 y 180 km, suficiente para la mayoría de las rutas de distribución urbana en una sola carga nocturna.', categoria: 'electricos', orden: 20, activa: true },
+  { pregunta: '¿Qué tipo de cargador necesito y cuánto tarda en cargarse?', respuesta: 'El e 614 acepta carga en corriente alterna (CA) trifásica y carga rápida en corriente continua (CC). Con cargador AC trifásico industrial (22 kW), la carga completa tarda aproximadamente 6 a 8 horas. Con cargador rápido DC, puede alcanzar el 80% de carga en menos de 2 horas. Asesoramos en la instalación de infraestructura de carga en tu empresa.', categoria: 'electricos', orden: 21, activa: true },
+  { pregunta: '¿Existen beneficios o subsidios para la compra del camión eléctrico en Chile?', respuesta: 'Sí. Los vehículos eléctricos de uso comercial pueden acceder a reducción del impuesto de primera categoría, exención de restricción vehicular en la RM y acceso a programas de fomento del Ministerio de Energía. Nuestros asesores te guían en la evaluación de cada beneficio aplicable a tu caso.', categoria: 'electricos', orden: 22, activa: true },
+  { pregunta: '¿Cuánto se ahorra en costos operativos con un camión eléctrico vs. uno diésel?', respuesta: 'En operaciones urbanas de alta frecuencia, el costo energético del e 614 es hasta un 70% menor que el de un camión diésel equivalente. A esto se suma una reducción de hasta un 60% en costos de mantenimiento. El retorno de inversión frente al diferencial de precio de compra suele alcanzarse entre los 3 y 5 años según la operación.', categoria: 'electricos', orden: 23, activa: true },
+];
+
+// ── DATOS: Soluciones ─────────────────────────────────────────────────────────
+
+const SOLUCIONES = [
+  {
+    titulo: 'Última Milla Urbana',
+    slug: 'ultima-milla-urbana',
+    descripcion: 'Distribución ágil en ciudad, parking fácil y bajo consumo. El Aumark S lidera la eficiencia en el reparto urbano con hasta 140 HP y 3.500 kg de carga útil.',
+    categoria: 'urbano',
+    orden: 1,
+    activa: true,
+  },
+  {
+    titulo: 'Distribución Regional',
+    slug: 'distribucion-regional',
+    descripcion: 'Motor Cummins Euro V, cabina confort y carga de hasta 12.600 kg. El 1827 es el referente del transporte interurbano en Chile con presencia en las principales rutas del país.',
+    categoria: 'distribucion',
+    orden: 2,
+    activa: true,
+  },
+  {
+    titulo: 'Industrial y Minería',
+    slug: 'industrial-mineria',
+    descripcion: 'Tracción 6×4, chasis de alta resistencia y componentes Cummins diseñados para las condiciones más exigentes. El Auman 1522 opera donde otros no pueden.',
+    categoria: 'industrial',
+    orden: 3,
+    activa: true,
+  },
+  {
+    titulo: 'Construcción y Obras',
+    slug: 'construccion-obras',
+    descripcion: 'Caja volcadora hidráulica para mover tierra, escombros y materiales en obra. Alta capacidad de carga, transmisión robusta y sistema volcador de 6 m³.',
+    categoria: 'construccion',
+    orden: 4,
+    activa: true,
+  },
+  {
+    titulo: 'Electromovilidad',
+    slug: 'electromovilidad',
+    descripcion: 'Cero emisiones directas, carga en menos de 2 horas y hasta un 70% de ahorro en costos operativos versus diésel. El Foton e 614 es el futuro del reparto urbano ya disponible hoy.',
+    categoria: 'electromovilidad',
+    orden: 5,
+    activa: true,
+  },
+  {
+    titulo: 'Flotas Empresariales',
+    slug: 'flotas-empresariales',
+    descripcion: 'Para operadores que no pueden parar: el Auman GTL cubre larga distancia con motor Cummins ISM 400 HP, cabina full comfort y el soporte técnico nacional de Andes Motor.',
+    categoria: 'flotas',
+    orden: 6,
+    activa: true,
+  },
+];
+
 // ── Runners ───────────────────────────────────────────────────────────────────
 
 // UIDs de los content types (singularName del schema.json)
@@ -581,6 +662,54 @@ async function seedGlobal(token) {
   }
 }
 
+// UIDs adicionales
+const UID_FAQ      = 'api::faq.faq';
+const UID_SOLUCION = 'api::solucion.solucion';
+
+async function seedFaqs(token) {
+  console.log('\n❓  Seeding FAQs...');
+
+  // Verificar si ya existe alguna FAQ
+  const check = await get(`${CM}/${UID_FAQ}?page=1&pageSize=1`, token);
+  const total = check.body?.pagination?.total ?? check.body?.results?.length ?? 0;
+  if (total > 0) {
+    console.log(`   ⏭  FAQs ya existen (${total} encontradas) — omitiendo`);
+    return;
+  }
+
+  let created = 0;
+  for (const faq of FAQS) {
+    try {
+      const entry = await createEntry(UID_FAQ, faq, token);
+      await publishEntry(UID_FAQ, entry.id, token);
+      created++;
+    } catch (e) {
+      console.error(`   ❌  Error creando FAQ: ${faq.pregunta.slice(0, 50)}...`, e.message);
+    }
+  }
+  console.log(`   📊  FAQs: ${created} creadas`);
+}
+
+async function seedSoluciones(token) {
+  console.log('\n💡  Seeding soluciones...');
+  let created = 0;
+  let skipped = 0;
+
+  for (const sol of SOLUCIONES) {
+    const existing = await findBySlug(UID_SOLUCION, sol.slug, token);
+    if (existing) {
+      console.log(`   ⏭  Solución "${sol.titulo}" ya existe — omitiendo`);
+      skipped++;
+      continue;
+    }
+    const entry = await createEntry(UID_SOLUCION, sol, token);
+    await publishEntry(UID_SOLUCION, entry.id, token);
+    console.log(`   ✅  Solución creada: ${sol.titulo}`);
+    created++;
+  }
+  console.log(`   📊  Soluciones: ${created} creadas, ${skipped} omitidas`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -595,6 +724,8 @@ async function main() {
   await seedModelos(token);
   await seedNoticias(token);
   await seedSucursales(token);
+  await seedFaqs(token);
+  await seedSoluciones(token);
 
   console.log('\n🎉  Seeding completado.\n');
   console.log('Próximos pasos:');
