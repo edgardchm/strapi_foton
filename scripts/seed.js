@@ -710,6 +710,63 @@ async function seedSoluciones(token) {
   console.log(`   📊  Soluciones: ${created} creadas, ${skipped} omitidas`);
 }
 
+// ── DATOS: Banners (Hero Slider Home) ─────────────────────────────────────────
+
+const UID_BANNER = 'api::banner.banner';
+
+const BANNERS = [
+  {
+    titulo: 'Innovación en Movimiento',
+    subtitulo: 'Bienvenido a un viaje donde la innovación se encuentra en cada curva del camino',
+    descripcion: 'Descubre la línea completa de camiones Foton para distribución, construcción e industria.',
+    ctaTexto: 'Cotizar Ahora',
+    ctaUrl: '/cotizar',
+    orden: 1,
+    activo: true,
+  },
+  {
+    titulo: 'Electromovilidad al Servicio de tu Empresa',
+    subtitulo: 'El e 614 llega para transformar la logística urbana de Chile',
+    descripcion: '208 km de autonomía · Carga en 45 minutos · 0 emisiones · Mayor ahorro operativo.',
+    ctaTexto: 'Ver e 614 Eléctrico',
+    ctaUrl: '/modelos/detail?model=e614',
+    orden: 2,
+    activo: true,
+  },
+  {
+    titulo: 'Red de Servicio Técnico en Todo Chile',
+    subtitulo: 'Más de 30 centros autorizados para mantener tu flota siempre operativa',
+    descripcion: 'Técnicos certificados por Foton International. Repuestos originales garantizados en todo el país.',
+    ctaTexto: 'Ver Sucursales',
+    ctaUrl: '/sucursales',
+    orden: 3,
+    activo: true,
+  },
+];
+
+async function seedBanners(token) {
+  console.log('\n🖼️   Seeding banners (hero slider)...');
+
+  const check = await get(`${CM}/${UID_BANNER}?page=1&pageSize=1`, token);
+  const total = check.body?.pagination?.total ?? check.body?.results?.length ?? 0;
+  if (total > 0) {
+    console.log(`   ⏭  Banners ya existen (${total} encontrados) — omitiendo`);
+    return;
+  }
+
+  let created = 0;
+  for (const banner of BANNERS) {
+    try {
+      const entry = await createEntry(UID_BANNER, banner, token);
+      await publishEntry(UID_BANNER, entry.id, token);
+      created++;
+    } catch (e) {
+      console.error(`   ❌  Error creando banner: ${banner.titulo}`, e.message);
+    }
+  }
+  console.log(`   📊  Banners: ${created} creados`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -721,6 +778,7 @@ async function main() {
   const token = await authenticate();
 
   await seedGlobal(token);
+  await seedBanners(token);
   await seedModelos(token);
   await seedNoticias(token);
   await seedSucursales(token);
