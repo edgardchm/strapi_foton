@@ -35,6 +35,11 @@ module.exports = [
     },
   },
   'strapi::session',
-  'strapi::favicon',
+  {
+    name: 'strapi::favicon',
+    config: {
+      path: './public/favicon.ico',
+    },
+  },
   'strapi::public',
 ];

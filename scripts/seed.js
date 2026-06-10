@@ -102,44 +102,48 @@ async function put(path, body, token) {
 async function authenticate() {
   console.log(`\n🔐  Autenticando en ${BASE_URL}...`);
 
-  const res = await post('/api/auth/local', {
-    identifier: IDENTIFIER,
+  // Strapi v4: los admins usan /admin/login, NO /api/auth/local
+  const res = await post('/admin/login', {
+    email: IDENTIFIER,
     password: PASSWORD,
   });
 
-  if (res.status !== 200 || !res.body.jwt) {
+  if (res.status !== 200 || !res.body?.data?.token) {
     console.error('❌  Autenticación fallida:', res.body?.error?.message || JSON.stringify(res.body));
     process.exit(1);
   }
 
-  console.log(`✅  Autenticado como: ${res.body.user?.email}`);
-  return res.body.jwt;
+  console.log(`✅  Autenticado como: ${res.body.data.user?.email}`);
+  return res.body.data.token;
 }
 
 // ── Helpers de seeding ────────────────────────────────────────────────────────
+// Usa la Admin Content-Manager API (requiere token de admin, no de users-permissions)
 
-async function findBySlug(endpoint, slug, token) {
-  const res = await get(`/api/${endpoint}?filters[slug][$eq]=${encodeURIComponent(slug)}&pagination[pageSize]=1`, token);
-  const items = res.body?.data;
+const CM = '/content-manager/collection-types';
+
+async function findBySlug(uid, slug, token) {
+  const res = await get(`${CM}/${uid}?page=1&pageSize=1&filters[$and][0][slug][$eq]=${encodeURIComponent(slug)}`, token);
+  const items = res.body?.results;
   return Array.isArray(items) && items.length > 0 ? items[0] : null;
 }
 
-async function findByCodigo(endpoint, codigo, token) {
-  const res = await get(`/api/${endpoint}?filters[codigo][$eq]=${encodeURIComponent(codigo)}&pagination[pageSize]=1`, token);
-  const items = res.body?.data;
+async function findByCodigo(uid, codigo, token) {
+  const res = await get(`${CM}/${uid}?page=1&pageSize=1&filters[$and][0][codigo][$eq]=${encodeURIComponent(codigo)}`, token);
+  const items = res.body?.results;
   return Array.isArray(items) && items.length > 0 ? items[0] : null;
 }
 
-async function createEntry(endpoint, data, token) {
-  const res = await post(`/api/${endpoint}`, { data }, token);
+async function createEntry(uid, data, token) {
+  const res = await post(`${CM}/${uid}`, data, token);
   if (res.status === 200 || res.status === 201) {
-    return res.body?.data;
+    return res.body;
   }
-  throw new Error(`POST /api/${endpoint} → ${res.status}: ${JSON.stringify(res.body?.error || res.body)}`);
+  throw new Error(`POST ${CM}/${uid} → ${res.status}: ${JSON.stringify(res.body?.error || res.body)}`);
 }
 
-async function publishEntry(endpoint, id, token) {
-  const res = await put(`/api/${endpoint}/${id}`, { data: { publishedAt: new Date().toISOString() } }, token);
+async function publishEntry(uid, id, token) {
+  const res = await post(`${CM}/${uid}/${id}/actions/publish`, {}, token);
   return res.status === 200;
 }
 
@@ -472,21 +476,27 @@ const GLOBAL_CONFIG = {
 
 // ── Runners ───────────────────────────────────────────────────────────────────
 
+// UIDs de los content types (singularName del schema.json)
+const UID_MODELO    = 'api::modelo.modelo';
+const UID_NOTICIA   = 'api::noticia.noticia';
+const UID_SUCURSAL  = 'api::sucursal.sucursal';
+const UID_GLOBAL    = 'api::global.global';    // singleType
+
 async function seedModelos(token) {
   console.log('\n🚛  Seeding modelos...');
   let created = 0;
   let skipped = 0;
 
   for (const modelo of MODELOS) {
-    const existing = await findBySlug('modelos', modelo.slug, token);
+    const existing = await findBySlug(UID_MODELO, modelo.slug, token);
     if (existing) {
       console.log(`   ⏭  Modelo "${modelo.nombre}" ya existe — omitiendo`);
       skipped++;
       continue;
     }
 
-    const entry = await createEntry('modelos', modelo, token);
-    await publishEntry('modelos', entry.id, token);
+    const entry = await createEntry(UID_MODELO, modelo, token);
+    await publishEntry(UID_MODELO, entry.id, token);
     console.log(`   ✅  Modelo creado: ${modelo.nombre} (id: ${entry.id})`);
     created++;
   }
@@ -500,15 +510,15 @@ async function seedNoticias(token) {
   let skipped = 0;
 
   for (const noticia of NOTICIAS) {
-    const existing = await findBySlug('noticias', noticia.slug, token);
+    const existing = await findBySlug(UID_NOTICIA, noticia.slug, token);
     if (existing) {
       console.log(`   ⏭  Noticia "${noticia.titulo.slice(0, 50)}..." ya existe — omitiendo`);
       skipped++;
       continue;
     }
 
-    const entry = await createEntry('noticias', noticia, token);
-    await publishEntry('noticias', entry.id, token);
+    const entry = await createEntry(UID_NOTICIA, noticia, token);
+    await publishEntry(UID_NOTICIA, entry.id, token);
     console.log(`   ✅  Noticia creada: ${noticia.titulo.slice(0, 50)}... (id: ${entry.id})`);
     created++;
   }
@@ -522,14 +532,17 @@ async function seedSucursales(token) {
   let skipped = 0;
 
   for (const sucursal of SUCURSALES) {
-    const existing = await findByCodigo('sucursales', sucursal.codigo, token);
+    const existing = await findByCodigo(UID_SUCURSAL, sucursal.codigo, token);
     if (existing) {
       console.log(`   ⏭  Sucursal "${sucursal.nombre}" ya existe — omitiendo`);
       skipped++;
       continue;
     }
 
-    const entry = await createEntry('sucursales', sucursal, token);
+    const entry = await createEntry(UID_SUCURSAL, sucursal, token);
+    // Sucursales no tienen publishedAt en el schema, se guardan como draft automáticamente.
+    // Publicar igual para dejarlas activas:
+    await publishEntry(UID_SUCURSAL, entry.id, token);
     console.log(`   ✅  Sucursal creada: ${sucursal.nombre} (id: ${entry.id})`);
     created++;
   }
@@ -539,25 +552,32 @@ async function seedSucursales(token) {
 
 async function seedGlobal(token) {
   console.log('\n🌐  Seeding configuración global...');
+  // global es singleType → admin API usa /content-manager/single-types/{uid}
+  const ST = `/content-manager/single-types/${UID_GLOBAL}`;
 
-  // Verificar si ya existe
-  const existing = await get('/api/global', token);
-  if (existing.body?.data) {
+  const existing = await get(ST, token);
+  const exists = existing.status === 200 && existing.body?.id;
+
+  if (exists) {
     console.log('   ⏭  Global ya existe — actualizando con PUT...');
-    const res = await put('/api/global', { data: GLOBAL_CONFIG }, token);
+    const res = await put(ST, GLOBAL_CONFIG, token);
     if (res.status === 200) {
-      console.log('   ✅  Global actualizado');
+      // Publicar
+      await post(`${ST}/actions/publish`, {}, token);
+      console.log('   ✅  Global actualizado y publicado');
     } else {
-      console.error('   ❌  Error actualizando global:', res.body?.error || res.body);
+      console.error('   ❌  Error actualizando global:', JSON.stringify(res.body?.error || res.body));
     }
     return;
   }
 
-  const res = await post('/api/global', { data: GLOBAL_CONFIG }, token);
+  // Si no existe, un PUT a single-type también crea el registro
+  const res = await put(ST, GLOBAL_CONFIG, token);
   if (res.status === 200 || res.status === 201) {
-    console.log('   ✅  Global creado');
+    await post(`${ST}/actions/publish`, {}, token);
+    console.log('   ✅  Global creado y publicado');
   } else {
-    console.error('   ❌  Error creando global:', res.body?.error || res.body);
+    console.error('   ❌  Error creando global:', JSON.stringify(res.body?.error || res.body));
   }
 }
 
