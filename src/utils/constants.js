@@ -1,9 +1,9 @@
 'use strict';
 
 module.exports = {
-  IMPORT_TYPES: ['modelos', 'sucursales', 'noticias'],
-  MAX_IMPORT_FILE_SIZE: 5242880, // 5MB
-  ALLOWED_IMPORT_EXTENSIONS: ['xlsx', 'xls'],
+  IMPORT_TYPES: ['sucursal', 'modelo-version'],
+  MAX_IMPORT_FILE_SIZE: 10485760, // 10MB
+  ALLOWED_IMPORT_EXTENSIONS: ['xlsx', 'xls', 'csv'],
 
   ESTADOS_COTIZACION: ['nuevo', 'contactado', 'cerrado', 'descartado'],
   ESTADOS_CONTACTO: ['nuevo', 'leido', 'respondido'],

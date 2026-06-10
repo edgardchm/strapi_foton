@@ -1,0 +1,83 @@
+{
+  "kind": "collectionType",
+  "collectionName": "import_logs",
+  "info": {
+    "singularName": "import-log",
+    "pluralName": "import-logs",
+    "displayName": "Log de Importación",
+    "description": "Registro de auditoría de todas las importaciones de datos Excel"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "timestamps": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "import_id": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 100
+    },
+    "nombre_archivo": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "tipo_importacion": {
+      "type": "enumeration",
+      "enum": ["sucursal", "modelo-version", "otro"],
+      "description": "Tipo de colección importada"
+    },
+    "modo_importacion": {
+      "type": "enumeration",
+      "enum": ["create", "update", "upsert"],
+      "default": "upsert"
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["preview", "procesando", "completada", "completada_con_errores", "fallida"],
+      "default": "preview"
+    },
+    "total_filas": {
+      "type": "integer",
+      "default": 0
+    },
+    "filas_validas": {
+      "type": "integer",
+      "default": 0
+    },
+    "filas_con_error": {
+      "type": "integer",
+      "default": 0
+    },
+    "registros_creados": {
+      "type": "integer",
+      "default": 0
+    },
+    "registros_actualizados": {
+      "type": "integer",
+      "default": 0
+    },
+    "registros_omitidos": {
+      "type": "integer",
+      "default": 0
+    },
+    "duracion_ms": {
+      "type": "integer"
+    },
+    "errores": {
+      "type": "json"
+    },
+    "metadata": {
+      "type": "json"
+    },
+    "usuario_email": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "fecha_confirmacion": {
+      "type": "datetime"
+    }
+  }
+}

@@ -9,8 +9,8 @@ module.exports = {
       config: {
         auth: { scope: ['plugin::users-permissions.user'] },
         policies: [],
-        description: 'Preview importación Excel — requiere autenticación',
-        middlewares: [],
+        middlewares: ['api::import-excel.import-auth'],
+        description: 'Preview importación Excel — requiere admin autenticado',
       },
     },
     {
@@ -20,7 +20,30 @@ module.exports = {
       config: {
         auth: { scope: ['plugin::users-permissions.user'] },
         policies: [],
-        description: 'Confirmar e importar Excel — requiere token de preview',
+        middlewares: ['api::import-excel.import-auth'],
+        description: 'Confirmar e importar Excel — requiere admin autenticado',
+      },
+    },
+    {
+      method: 'GET',
+      path: '/import-excel/status/:importId',
+      handler: 'import-excel.status',
+      config: {
+        auth: { scope: ['plugin::users-permissions.user'] },
+        policies: [],
+        middlewares: ['api::import-excel.import-auth'],
+        description: 'Consultar estado de una importación',
+      },
+    },
+    {
+      method: 'GET',
+      path: '/import-excel/logs',
+      handler: 'import-excel.logs',
+      config: {
+        auth: { scope: ['plugin::users-permissions.user'] },
+        policies: [],
+        middlewares: ['api::import-excel.import-auth'],
+        description: 'Listar logs de importaciones',
       },
     },
     {
