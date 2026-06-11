@@ -15,8 +15,24 @@ module.exports = [
     name: 'strapi::cors',
     config: {
       enabled: true,
-      headers: '*',
-      origin: ['*'],
+      headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+      // Refleja el origin del request. FRONTEND_URL en Railway define el dominio
+      // de producción; en dev se aceptan los localhost habituales.
+      origin: (ctx) => {
+        const allowed = [
+          process.env.FRONTEND_URL,
+          'http://localhost:4200',
+          'http://localhost:3000',
+          'http://localhost:1337',
+        ].filter(Boolean);
+        const req = ctx.request.header.origin;
+        if (!req) return allowed[0] || '*';
+        // Retornar el origin tal cual si está en la lista
+        if (allowed.some(o => req.startsWith(o))) return req;
+        // Fuera de la lista: igual se permite (para preview URLs de Netlify, etc.)
+        return req;
+      },
     },
   },
   'strapi::poweredBy',
