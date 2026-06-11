@@ -7,7 +7,9 @@
     "displayName": "Global",
     "description": "Configuración global del sitio Foton Chile — redes sociales, footer, contacto, SEO defaults"
   },
-  "options": { "draftAndPublish": false },
+  "options": {
+    "draftAndPublish": false
+  },
   "attributes": {
     "siteName": {
       "type": "string",
@@ -21,17 +23,23 @@
     "logoHeader": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "logoFooter": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "favicon": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "telefono": {
       "type": "string",
@@ -44,10 +52,22 @@
       "type": "text",
       "maxLength": 300
     },
-    "facebook": { "type": "string", "maxLength": 500 },
-    "instagram": { "type": "string", "maxLength": 500 },
-    "linkedin": { "type": "string", "maxLength": 500 },
-    "youtube": { "type": "string", "maxLength": 500 },
+    "facebook": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "instagram": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "linkedin": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "youtube": {
+      "type": "string",
+      "maxLength": 500
+    },
     "footerTexto": {
       "type": "text",
       "maxLength": 500
@@ -67,7 +87,9 @@
     "seoDefaultImage": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "googleAnalyticsId": {
       "type": "string",
@@ -76,6 +98,24 @@
     "whatsapp": {
       "type": "string",
       "maxLength": 30
+    },
+    "statsBar": {
+      "type": "json",
+      "description": "Array de stats de la barra superior del home. Formato: [{\"valor\": \"+80\", \"label\": \"Países con presencia\"}, {\"valor\": \"+11M\", \"label\": \"Ventas globales\"}, {\"valor\": \"14+\", \"label\": \"Años en Chile\"}, {\"valor\": \"100%\", \"label\": \"Cobertura nacional\"}]"
+    },
+    "homeNosotrosParrafo1": {
+      "type": "text",
+      "maxLength": 600,
+      "description": "Primer párrafo de la sección Nosotros en el Home"
+    },
+    "homeNosotrosParrafo2": {
+      "type": "text",
+      "maxLength": 600,
+      "description": "Segundo párrafo de la sección Nosotros en el Home"
+    },
+    "homeNosotrosStats": {
+      "type": "json",
+      "description": "Stats de la tarjeta Nosotros en el Home. Formato: [{\"valor\": \"+11M\", \"label\": \"Unidades globales\"}, {\"valor\": \"+80\", \"label\": \"Países\"}, {\"valor\": \"#1\", \"label\": \"China\"}]"
     }
   }
 }

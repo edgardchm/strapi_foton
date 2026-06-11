@@ -27,7 +27,9 @@
 
 const https = require('https');
 const http = require('http');
-const url = require('url');
+const url  = require('url');
+const fs   = require('fs');
+const path = require('path');
 
 // ── Configuración ─────────────────────────────────────────────────────────────
 
@@ -472,6 +474,20 @@ const GLOBAL_CONFIG = {
   footerCopyright: '© 2025 Foton Chile / Andes Motor. Todos los derechos reservados.',
   seoDefaultTitle: 'Foton Chile — Camiones y Vehículos Comerciales',
   seoDefaultDescription: 'Distribuidor oficial Foton en Chile. Livianos, medianos, pesados y eléctricos con respaldo de Andes Motor en Santiago, Antofagasta y Concepción.',
+  // ── Campos nuevos (Phase 2 CMS audit) ──────────────────────────────────────
+  statsBar: [
+    { valor: '+80',  label: 'Países con presencia' },
+    { valor: '+11M', label: 'Ventas globales' },
+    { valor: '14+',  label: 'Años en Chile' },
+    { valor: '100%', label: 'Cobertura nacional' },
+  ],
+  homeNosotrosParrafo1: 'Foton Motor es hoy el fabricante de vehículos comerciales más grande de China y uno de los líderes globales del sector. Con presencia en más de 80 países, sus vehículos se han ganado la confianza de flotas industriales, agrícolas y de construcción en los mercados más exigentes del mundo.',
+  homeNosotrosParrafo2: 'En Chile, de la mano de Andes Motor, ofrecemos tecnología de primer nivel respaldada por una red de servicio técnico que cubre desde Antofagasta hasta Chiloé. Hoy somos la elección de las empresas que no se permiten parar.',
+  homeNosotrosStats: [
+    { valor: '+11M', label: 'Unidades globales' },
+    { valor: '+80',  label: 'Países' },
+    { valor: '#1',   label: 'China' },
+  ],
 };
 
 // ── DATOS: FAQs ───────────────────────────────────────────────────────────────
@@ -552,6 +568,30 @@ const SOLUCIONES = [
     categoria: 'flotas',
     orden: 6,
     activa: true,
+  },
+];
+
+// ── DATOS: Empresas Cliente ───────────────────────────────────────────────────
+// Logos tomados desde IA-Foton/src/assets/icons/ (sibling repo)
+
+const LOGOS_DIR = path.resolve(__dirname, '../../IA-Foton/src/assets/icons');
+
+const EMPRESAS_CLIENTES = [
+  {
+    nombre: 'S:SUR Rent a Car',
+    logoFile: 'brand-logo-1.svg',
+    altText: 'S:SUR Rent a Car — empresa de arriendo de vehículos',
+    url: null,
+    orden: 1,
+    activo: true,
+  },
+  {
+    nombre: 'Red Metropolitana de Movilidad',
+    logoFile: 'brand-logo-2.svg',
+    altText: 'Red Metropolitana de Movilidad',
+    url: null,
+    orden: 2,
+    activo: true,
   },
 ];
 
@@ -663,8 +703,9 @@ async function seedGlobal(token) {
 }
 
 // UIDs adicionales
-const UID_FAQ      = 'api::faq.faq';
-const UID_SOLUCION = 'api::solucion.solucion';
+const UID_FAQ             = 'api::faq.faq';
+const UID_SOLUCION        = 'api::solucion.solucion';
+const UID_EMPRESA_CLIENTE = 'api::empresa-cliente.empresa-cliente';
 
 async function seedFaqs(token) {
   console.log('\n❓  Seeding FAQs...');
@@ -767,6 +808,234 @@ async function seedBanners(token) {
   console.log(`   📊  Banners: ${created} creados`);
 }
 
+// ── Upload Media ──────────────────────────────────────────────────────────────
+
+/**
+ * Sube un archivo local a la Media Library de Strapi.
+ * Usa solo módulos built-in de Node (sin dependencias externas).
+ * Retorna el objeto media con { id, url, name, ... } o lanza error.
+ */
+function uploadMedia(filePath, token) {
+  return new Promise((resolve, reject) => {
+    if (!fs.existsSync(filePath)) {
+      return reject(new Error(`Archivo no encontrado: ${filePath}`));
+    }
+
+    const fileContent  = fs.readFileSync(filePath);
+    const fileName     = path.basename(filePath);
+    const ext          = path.extname(fileName).toLowerCase();
+    const mimeMap      = {
+      '.svg':  'image/svg+xml',
+      '.png':  'image/png',
+      '.jpg':  'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+    };
+    const mime     = mimeMap[ext] || 'application/octet-stream';
+    const boundary = `----SeedBoundary${Date.now().toString(16)}`;
+
+    const header = Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="files"; filename="${fileName}"\r\n` +
+      `Content-Type: ${mime}\r\n\r\n`
+    );
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body   = Buffer.concat([header, fileContent, footer]);
+
+    const parsed  = url.parse(`${BASE_URL}/upload`);
+    const isHttps = parsed.protocol === 'https:';
+    const lib     = isHttps ? https : http;
+
+    const options = {
+      hostname: parsed.hostname,
+      port:     parsed.port || (isHttps ? 443 : 80),
+      path:     '/upload',
+      method:   'POST',
+      headers:  {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type':  `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length,
+      },
+    };
+
+    const req = lib.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (res.statusCode === 200 || res.statusCode === 201) {
+            // Strapi devuelve array de archivos subidos
+            const media = Array.isArray(json) ? json[0] : json;
+            resolve(media);
+          } else {
+            reject(new Error(`Upload HTTP ${res.statusCode}: ${data.slice(0, 200)}`));
+          }
+        } catch (e) {
+          reject(new Error(`Upload parse error: ${data.slice(0, 200)}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// ── Helpers empresa-cliente ───────────────────────────────────────────────────
+
+async function findByNombre(uid, nombre, token) {
+  const encoded = encodeURIComponent(nombre);
+  const res = await get(
+    `${CM}/${uid}?page=1&pageSize=1&filters[$and][0][nombre][$eq]=${encoded}`,
+    token
+  );
+  const items = res.body?.results;
+  return Array.isArray(items) && items.length > 0 ? items[0] : null;
+}
+
+async function seedEmpresasCliente(token) {
+  console.log('\n🏢  Seeding empresas cliente...');
+  let created = 0;
+  let skipped = 0;
+  let failed  = 0;
+
+  for (const empresa of EMPRESAS_CLIENTES) {
+    // Idempotencia: verificar por nombre
+    const existing = await findByNombre(UID_EMPRESA_CLIENTE, empresa.nombre, token);
+    if (existing) {
+      console.log(`   ⏭  Empresa "${empresa.nombre}" ya existe — omitiendo`);
+      skipped++;
+      continue;
+    }
+
+    // Subir logo a Media Library
+    const logoPath = path.join(LOGOS_DIR, empresa.logoFile);
+    let logoId;
+    try {
+      const media = await uploadMedia(logoPath, token);
+      logoId = media.id;
+      console.log(`   📎  Logo subido: ${empresa.logoFile} (media id: ${logoId})`);
+    } catch (uploadErr) {
+      console.error(`   ⚠️   No se pudo subir ${empresa.logoFile}: ${uploadErr.message}`);
+      console.error(`        → Crea la empresa "${empresa.nombre}" manualmente en el admin y asigna el logo.`);
+      failed++;
+      continue;
+    }
+
+    // Crear entrada con referencia al media
+    try {
+      const entry = await createEntry(UID_EMPRESA_CLIENTE, {
+        nombre:  empresa.nombre,
+        logo:    logoId,          // Strapi acepta el ID entero del media
+        altText: empresa.altText,
+        url:     empresa.url,
+        orden:   empresa.orden,
+        activo:  empresa.activo,
+      }, token);
+      // draftAndPublish: false → no requiere publicar
+      console.log(`   ✅  Empresa creada: ${empresa.nombre} (id: ${entry.id})`);
+      created++;
+    } catch (createErr) {
+      console.error(`   ❌  Error creando empresa "${empresa.nombre}": ${createErr.message}`);
+      failed++;
+    }
+  }
+
+  console.log(`   📊  Empresas: ${created} creadas, ${skipped} omitidas, ${failed} con error`);
+  if (failed > 0) {
+    console.log('   ℹ️   Los errores suelen requerir carga manual del logo en el admin de Strapi.');
+  }
+}
+
+// ── Permisos públicos ─────────────────────────────────────────────────────────
+
+/**
+ * Configura permisos de solo lectura (find / findOne) en el rol Public
+ * para los endpoints que el frontend Angular consume públicamente.
+ *
+ * Usa la API de users-permissions (accesible con token de admin).
+ * Si falla, imprime las instrucciones para hacerlo manualmente.
+ */
+async function seedPermisos(token) {
+  console.log('\n🔒  Configurando permisos públicos...');
+
+  // Endpoints que el frontend consume sin autenticación
+  const PERMISOS_NECESARIOS = {
+    'api::global.global':             { actions: ['find'] },
+    'api::modelo.modelo':             { actions: ['find', 'findOne'] },
+    'api::noticia.noticia':           { actions: ['find', 'findOne'] },
+    'api::sucursal.sucursal':         { actions: ['find', 'findOne'] },
+    'api::banner.banner':             { actions: ['find'] },
+    'api::solucion.solucion':         { actions: ['find', 'findOne'] },
+    'api::faq.faq':                   { actions: ['find'] },
+    'api::pagina.pagina':             { actions: ['find', 'findOne'] },
+    'api::empresa-cliente.empresa-cliente': { actions: ['find', 'findOne'] },
+  };
+
+  try {
+    // 1. Obtener lista de roles
+    const rolesRes = await get('/users-permissions/roles', token);
+    if (rolesRes.status !== 200) {
+      throw new Error(`GET /users-permissions/roles → ${rolesRes.status}: ${JSON.stringify(rolesRes.body)}`);
+    }
+
+    const roles = rolesRes.body?.roles ?? rolesRes.body?.data ?? [];
+    const publicRole = roles.find((r) => r.type === 'public' || r.name?.toLowerCase() === 'public');
+    if (!publicRole) {
+      throw new Error('No se encontró el rol Public en la respuesta: ' + JSON.stringify(roles.map((r) => r.name)));
+    }
+
+    // 2. Obtener el rol completo con sus permisos actuales
+    const roleRes = await get(`/users-permissions/roles/${publicRole.id}`, token);
+    if (roleRes.status !== 200) {
+      throw new Error(`GET /users-permissions/roles/${publicRole.id} → ${roleRes.status}`);
+    }
+
+    const roleData = roleRes.body?.role ?? roleRes.body;
+    const permissions = roleData.permissions ?? {};
+
+    // 3. Habilitar las acciones necesarias (sin deshabilitar las existentes)
+    for (const [uid, cfg] of Object.entries(PERMISOS_NECESARIOS)) {
+      if (!permissions[uid]) permissions[uid] = { controllers: {} };
+      // Determinar el nombre del controller (la parte final del UID)
+      const controllerName = uid.split('.').pop();
+      if (!permissions[uid].controllers) permissions[uid].controllers = {};
+      if (!permissions[uid].controllers[controllerName]) permissions[uid].controllers[controllerName] = {};
+
+      for (const action of cfg.actions) {
+        permissions[uid].controllers[controllerName][action] = { enabled: true, policy: '' };
+      }
+    }
+
+    // 4. PUT con los permisos actualizados
+    const putRes = await put(`/users-permissions/roles/${publicRole.id}`, {
+      ...roleData,
+      permissions,
+    }, token);
+
+    if (putRes.status === 200) {
+      console.log('   ✅  Permisos públicos configurados correctamente');
+      const listaEndpoints = Object.entries(PERMISOS_NECESARIOS)
+        .map(([uid, cfg]) => `      • ${uid}: ${cfg.actions.join(', ')}`)
+        .join('\n');
+      console.log('   Endpoints habilitados (solo lectura):\n' + listaEndpoints);
+    } else {
+      throw new Error(`PUT /users-permissions/roles/${publicRole.id} → ${putRes.status}: ${JSON.stringify(putRes.body?.error || putRes.body)}`);
+    }
+  } catch (err) {
+    console.warn('\n   ⚠️   No se pudieron configurar permisos vía API:', err.message);
+    console.warn('   → Configúralos manualmente en Strapi Admin:');
+    console.warn('      Settings → Users & Permissions → Roles → Public');
+    console.warn('      Habilitar "find" y "findOne" (solo lectura) para:');
+    for (const [uid, cfg] of Object.entries(PERMISOS_NECESARIOS)) {
+      console.warn(`        • ${uid}: ${cfg.actions.join(', ')}`);
+    }
+    console.warn('      ⛔  NO habilitar create / update / delete públicos.\n');
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -784,6 +1053,8 @@ async function main() {
   await seedSucursales(token);
   await seedFaqs(token);
   await seedSoluciones(token);
+  await seedEmpresasCliente(token);
+  await seedPermisos(token);
 
   console.log('\n🎉  Seeding completado.\n');
   console.log('Próximos pasos:');
